@@ -15,7 +15,6 @@ object RealSrEngine {
     private const val TAG = "Kythera_AI"
     private var isReady = false
 
-    // ─── Binary tetap dari folder realsr/ ───
     private val BINARIES = listOf(
         "realsr/realsr-ncnn",
         "realsr/libncnn.so",
@@ -23,31 +22,27 @@ object RealSrEngine {
         "realsr/libomp.so"
     )
 
-    // ─── Daftar folder model sesuai isi assets lu ───
-    private val MODEL_FOLDERS = listOf(
-        "models-Real-ESRGANv3-anime",
-        "models-Real-ESRGAN-anime",
-        "models-Real-ESRGAN",
-        "models-pro",
-        "models-ESRGAN-Nomos8kSC"
+    // 🔥 Kunci ke folder Kythera v3 lu
+    private const val MODEL_FOLDER = "models-Real-ESRGANv3-anime"
+    
+    // Copy semua ukuran x2, x3, dan x4 biar ready buat gonta-ganti
+    private val MODEL_FILES = listOf(
+        "x2.bin", "x2.param",
+        "x3.bin", "x3.param",
+        "x4.bin", "x4.param"
     )
 
-    // Karena lu pakai scale 4x, kita fokus narik file x4.bin dan x4.param aja dari tiap folder
-    private val MODEL_FILES = listOf("x4.bin", "x4.param")
-
-    // ─── Setup: copy file dari assets ke filesDir ───────────────────────
     suspend fun setup(context: Context): Boolean = withContext(Dispatchers.IO) {
         if (isReady) return@withContext true
 
         try {
             val baseDir = context.filesDir
 
-            // 1. Copy binary + lib
+            // 1. Copy binary
             for (assetPath in BINARIES) {
                 val outFile = File(baseDir, assetPath)
                 outFile.parentFile?.mkdirs()
                 
-                // Pengecekan aman pakai try-catch
                 try {
                     if (!outFile.exists()) {
                         context.assets.open(assetPath).use { input ->
@@ -62,22 +57,20 @@ object RealSrEngine {
                 }
             }
 
-            // 2. Copy file x4 dari masing-masing folder model
-            for (folder in MODEL_FOLDERS) {
-                for (file in MODEL_FILES) {
-                    val assetPath = "$folder/$file"
-                    val outFile = File(baseDir, assetPath)
-                    outFile.parentFile?.mkdirs()
-                    
-                    try {
-                        if (!outFile.exists()) {
-                            context.assets.open(assetPath).use { input ->
-                                FileOutputStream(outFile).use { output -> input.copyTo(output) }
-                            }
+            // 2. Copy semua ukuran model dari folder v3 anime
+            for (file in MODEL_FILES) {
+                val assetPath = "$MODEL_FOLDER/$file"
+                val outFile = File(baseDir, assetPath)
+                outFile.parentFile?.mkdirs()
+                
+                try {
+                    if (!outFile.exists()) {
+                        context.assets.open(assetPath).use { input ->
+                            FileOutputStream(outFile).use { output -> input.copyTo(output) }
                         }
-                    } catch (e: Exception) {
-                        Log.e(TAG, "File model nggak ketemu, skip: $assetPath")
                     }
+                } catch (e: Exception) {
+                    Log.e(TAG, "File model nggak ketemu: $assetPath")
                 }
             }
 
@@ -91,8 +84,8 @@ object RealSrEngine {
         }
     }
 
-    // ─── Main function: upscale bitmap ────────────────────────────────────────
-    suspend fun upscale(context: Context, input: Bitmap, modelFolder: String): Bitmap? = withContext(Dispatchers.IO) {
+    // Fungsi upscale ditambahin parameter 'scale' (2, 3, atau 4)
+    suspend fun upscale(context: Context, input: Bitmap, scale: String): Bitmap? = withContext(Dispatchers.IO) {
         try {
             val baseDir = context.filesDir
             val tmpDir  = context.cacheDir
@@ -110,18 +103,16 @@ object RealSrEngine {
 
             val binaryPath = File(baseDir, "realsr/realsr-ncnn").absolutePath
             val libDir     = File(baseDir, "realsr").absolutePath
-            
-            // 🔥 INI KUNCINYA: Arahin parameter -m ke folder yang dipilih user
-            val modelDirPath = File(baseDir, modelFolder).absolutePath
+            val modelDirPath = File(baseDir, MODEL_FOLDER).absolutePath
 
-            // Perintah shell: -m ngarah ke folder spesifik, -n ngarah ke "x4"
+            // 🔥 Eksekusi disesuaikan dengan skala pilihan lu
             val cmd = arrayOf(
                 binaryPath,
                 "-i", inputFile.absolutePath,
                 "-o", outputFile.absolutePath,
                 "-m", modelDirPath,
-                "-n", "x4",
-                "-s", "4",
+                "-n", "x$scale", // Akan jadi x2, x3, atau x4 otomatis
+                "-s", scale,     // Akan jadi 2, 3, atau 4 otomatis
                 "-g", "0"
             )
 
@@ -136,11 +127,7 @@ object RealSrEngine {
                 }
                 .start()
 
-            val log = process.inputStream.bufferedReader().readText()
             val exitCode = process.waitFor()
-
-            Log.d(TAG, "Exit code: $exitCode")
-            Log.d(TAG, "Log: $log")
 
             if (exitCode == 0 && outputFile.exists()) {
                 val result = BitmapFactory.decodeFile(outputFile.absolutePath)
@@ -148,22 +135,10 @@ object RealSrEngine {
                 outputFile.delete()
                 return@withContext result
             } else {
-                val logDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "Kythera")
-                if (!logDir.exists()) logDir.mkdirs()
-                
-                val errorLogFile = File(logDir, "kythera_error_log.txt")
-                errorLogFile.writeText("=== GAGAL EKSEKUSI BINARY ===\nEXIT CODE: $exitCode\n\nLOG TERMINAL:\n$log\n")
-                
                 return@withContext null
             }
-
         } catch (e: Exception) {
-            val logDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "Kythera")
-            if (!logDir.exists()) logDir.mkdirs()
-            
-            val errorLogFile = File(logDir, "kythera_error_log.txt")
-            errorLogFile.writeText("=== APLIKASI CRASH ===\nPESAN ERROR:\n${e.message}\n\nSTACKTRACE:\n${e.stackTraceToString()}")
-            
+            Log.e(TAG, "Error upscale: ${e.message}", e)
             return@withContext null
         }
     }
