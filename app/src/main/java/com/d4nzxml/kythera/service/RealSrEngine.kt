@@ -22,15 +22,16 @@ object RealSrEngine {
         "realsr/libomp.so"
     )
 
-    // 🔥 Kunci ke folder Kythera v3 lu
-    private const val MODEL_FOLDER = "models-Real-ESRGANv3-anime"
-    
+        // 🔥 Kunci ke folder Kythera v3 lu (realsr/ nya di DALAM tanda kutip ya!)
+    private const val MODEL_FOLDER = "realsr/models-Real-ESRGANv3-anime"
+
     // Copy semua ukuran x2, x3, dan x4 biar ready buat gonta-ganti
-    private val realsr/MODEL_FILES = listOf(
+    private val MODEL_FILES = listOf(
         "x2.bin", "x2.param",
         "x3.bin", "x3.param",
         "x4.bin", "x4.param"
     )
+
 
     suspend fun setup(context: Context): Boolean = withContext(Dispatchers.IO) {
         if (isReady) return@withContext true
