@@ -62,8 +62,9 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.appcompat)
 
+    // 🔥 INI YANG DIGANTI: Panggil FFmpeg langsung dari server internet, bukan folder lokal!
+    implementation("com.arthenica:ffmpeg-kit-full-gpl:6.0-2")
 
     implementation(libs.coil.compose)
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
     debugImplementation(libs.androidx.ui.tooling)
 }
