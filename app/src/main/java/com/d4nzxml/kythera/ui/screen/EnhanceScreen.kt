@@ -38,19 +38,12 @@ fun EnhanceScreen() {
     var outputBitmap by remember { mutableStateOf<Bitmap?>(null) }
     var fileName     by remember { mutableStateOf<String?>(null) }
     var isProcessing by remember { mutableStateOf(false) }
-    var statusText   by remember { mutableStateOf("Lagi motong & HD-in Poto nih Kang!") }
+    var statusText   by remember { mutableStateOf("Lagi nyiapin poto nih Kang!") }
 
-      // ─── DAFTAR MODEL SESUAI FOLDER DI ASSETS LU ───
-    val modelList = listOf(
-        "models-Real-ESRGANv3-anime",
-        "models-Real-ESRGAN-anime",
-        "models-Real-ESRGAN",
-        "models-pro",
-        "models-ESRGAN-Nomos8kSC"
-    )
+    // ─── PILIHAN SKALA UPSCALE ───
+    val scaleList = listOf("2", "3", "4")
     var expanded by remember { mutableStateOf(false) }
-    var selectedModel by remember { mutableStateOf(modelList[0]) }
-
+    var selectedScale by remember { mutableStateOf(scaleList[2]) } // Default 4x
 
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         uri?.let {
@@ -68,9 +61,8 @@ fun EnhanceScreen() {
         }
         scope.launch {
             isProcessing = true
-            statusText   = "Manasin mesin AI..."
+            statusText   = "Manasin mesin Kythera v3..."
 
-            // 1. Setup binary + model dari assets
             val ready = RealSrEngine.setup(context)
             if (!ready) {
                 snackbar.showSnackbar("Gagal setup mesin AI!")
@@ -78,10 +70,10 @@ fun EnhanceScreen() {
                 return@launch
             }
 
-            statusText = "Lagi HD-in poto pakai $selectedModel... (butuh beberapa detik)"
+            statusText = "Lagi nge-Upscale ${selectedScale}x... (Tunggu bentar Kang)"
 
-            // 2. Jalankan upscale dengan model yang dipilih
-            val result = RealSrEngine.upscale(context, inputBitmap!!, selectedModel)
+            // Lempar parameter skala (2, 3, atau 4) ke mesin
+            val result = RealSrEngine.upscale(context, inputBitmap!!, selectedScale)
 
             if (result != null) {
                 outputBitmap = result
@@ -96,7 +88,6 @@ fun EnhanceScreen() {
             } else {
                 snackbar.showSnackbar("ERROR! Gagal nge-HD-in poto. Cek log.")
             }
-
             isProcessing = false
         }
     }
@@ -108,13 +99,14 @@ fun EnhanceScreen() {
                 .verticalScroll(rememberScrollState())
                 .padding(20.dp)
         ) {
+            // ─── BRANDING BARU ───
             Text(
-                "AI Enhance Poto",
-                color = KColor.Text, fontSize = 22.sp, fontWeight = FontWeight.W800
+                "Kythera Upscale",
+                color = KColor.Text, fontSize = 24.sp, fontWeight = FontWeight.W800
             )
             Text(
-                "Bikin poto burik jadi HD pakai Real-ESRGAN (Vulkan GPU).",
-                color = KColor.Text2, fontSize = 13.sp
+                "powered by AI",
+                color = KColor.Accent, fontSize = 14.sp, fontWeight = FontWeight.Bold
             )
             Spacer(Modifier.height(20.dp))
 
@@ -140,7 +132,7 @@ fun EnhanceScreen() {
                 } else if (outputBitmap != null) {
                     Spacer(Modifier.height(16.dp))
                     Text(
-                        "Hasil HD x4 ($selectedModel):",
+                        "Hasil HD (Kythera v3 - ${selectedScale}x):",
                         color = KColor.Accent, fontWeight = FontWeight.Bold
                     )
                     Spacer(Modifier.height(8.dp))
@@ -154,24 +146,24 @@ fun EnhanceScreen() {
 
             Spacer(Modifier.height(20.dp))
 
-            // ─── UI DROPDOWN PILIH MODEL ───
+            // ─── DROPDOWN PILIH SKALA ───
             Box(modifier = Modifier.fillMaxWidth()) {
                 OutlinedButton(
                     onClick = { expanded = true },
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = KColor.Text)
                 ) {
-                    Text("Model AI: $selectedModel")
+                    Text("Mode: Kythera v3 (${selectedScale}x Upscale)")
                 }
                 DropdownMenu(
                     expanded = expanded,
                     onDismissRequest = { expanded = false }
                 ) {
-                    modelList.forEach { modelName ->
+                    scaleList.forEach { scale ->
                         DropdownMenuItem(
-                            text = { Text(modelName) },
+                            text = { Text("Kythera v3 - ${scale}x") },
                             onClick = {
-                                selectedModel = modelName
+                                selectedScale = scale
                                 expanded = false
                             }
                         )
@@ -182,7 +174,7 @@ fun EnhanceScreen() {
             Spacer(Modifier.height(16.dp))
 
             KPrimaryButton(
-                label = "Bikin HD Sekarang!",
+                label = "Upscale Sekarang!",
                 icon = Icons.Rounded.AutoAwesome,
                 enabled = !isProcessing && inputBitmap != null,
                 onClick = ::processImage
@@ -190,7 +182,6 @@ fun EnhanceScreen() {
             Spacer(Modifier.height(24.dp))
         }
 
-        // Loading overlay
         if (isProcessing) {
             Box(
                 modifier = Modifier
@@ -199,20 +190,13 @@ fun EnhanceScreen() {
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    CircularProgressIndicator(
-                        color = KColor.Accent,
-                        modifier = Modifier.size(64.dp)
-                    )
+                    CircularProgressIndicator(color = KColor.Accent, modifier = Modifier.size(64.dp))
                     Spacer(Modifier.height(16.dp))
-                    Text(
-                        "Memproses...",
-                        color = KColor.Text, fontSize = 20.sp, fontWeight = FontWeight.Bold
-                    )
+                    Text("Memproses...", color = KColor.Text, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                     Text(statusText, color = KColor.Text2, fontSize = 14.sp)
                 }
             }
         }
-
         SnackbarHost(snackbar, modifier = Modifier.align(Alignment.BottomCenter))
     }
 }
