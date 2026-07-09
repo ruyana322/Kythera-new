@@ -23,7 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.d4nzxml.kythera.service.GalleryService
-import com.d4nzxml.kythera.service.RealSrEngine
+import com.d4nzxml.kythera.RealSrEngine
 import com.d4nzxml.kythera.ui.components.*
 import com.d4nzxml.kythera.ui.theme.KColor
 import kotlinx.coroutines.launch
@@ -59,7 +59,7 @@ fun EnhanceScreen() {
             statusText   = "Manasin mesin AI..."
 
             // 1. Setup binary + model dari assets
-            val ready = RealSrEngine.setup(context)
+            val ready = RealSrEngine.initialize(context)
             if (!ready) {
                 snackbar.showSnackbar("Gagal setup mesin AI!")
                 isProcessing = false
@@ -69,7 +69,7 @@ fun EnhanceScreen() {
             statusText = "Lagi HD-in poto... (butuh beberapa detik)"
 
             // 2. Jalankan upscale
-            val result = RealSrEngine.upscale(context, inputBitmap!!)
+            val result = RealSrEngine.upscaleImage(context, inputBitmap!!, 4)
 
             if (result != null) {
                 outputBitmap = result
