@@ -24,6 +24,11 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
+    - name: Download Mentahan FFmpeg Raja Terakhir
+      run: |
+        mkdir -p app/libs
+        wget "https://artifactory.appodeal.com/appodeal-public/com/arthenica/ffmpeg-kit-full-gpl/6.0-2.LTS/ffmpeg-kit-full-gpl-6.0-2.LTS.aar" -O app/libs/ffmpeg-kit-full-gpl-6.0-2.LTS.aar
+
     - name: Build Release APK
       run: ./gradlew assembleRelease --no-daemon
 
