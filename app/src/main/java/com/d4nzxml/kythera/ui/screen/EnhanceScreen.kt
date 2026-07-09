@@ -40,6 +40,18 @@ fun EnhanceScreen() {
     var isProcessing by remember { mutableStateOf(false) }
     var statusText   by remember { mutableStateOf("Lagi motong & HD-in Poto nih Kang!") }
 
+      // ─── DAFTAR MODEL SESUAI FOLDER DI ASSETS LU ───
+    val modelList = listOf(
+        "models-Real-ESRGANv3-anime",
+        "models-Real-ESRGAN-anime",
+        "models-Real-ESRGAN",
+        "models-pro",
+        "models-ESRGAN-Nomos8kSC"
+    )
+    var expanded by remember { mutableStateOf(false) }
+    var selectedModel by remember { mutableStateOf(modelList[0]) }
+
+
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         uri?.let {
             outputBitmap = null
@@ -66,10 +78,10 @@ fun EnhanceScreen() {
                 return@launch
             }
 
-            statusText = "Lagi HD-in poto... (butuh beberapa detik)"
+            statusText = "Lagi HD-in poto pakai $selectedModel... (butuh beberapa detik)"
 
-            // 2. Jalankan upscale
-            val result = RealSrEngine.upscale(context, inputBitmap!!)
+            // 2. Jalankan upscale dengan model yang dipilih
+            val result = RealSrEngine.upscale(context, inputBitmap!!, selectedModel)
 
             if (result != null) {
                 outputBitmap = result
@@ -101,7 +113,7 @@ fun EnhanceScreen() {
                 color = KColor.Text, fontSize = 22.sp, fontWeight = FontWeight.W800
             )
             Text(
-                "Bikin poto burik jadi HD pakai Real-ESRGANv3 Anime (Vulkan GPU).",
+                "Bikin poto burik jadi HD pakai Real-ESRGAN (Vulkan GPU).",
                 color = KColor.Text2, fontSize = 13.sp
             )
             Spacer(Modifier.height(20.dp))
@@ -128,7 +140,7 @@ fun EnhanceScreen() {
                 } else if (outputBitmap != null) {
                     Spacer(Modifier.height(16.dp))
                     Text(
-                        "Hasil HD x4 (Real-ESRGANv3 Anime):",
+                        "Hasil HD x4 ($selectedModel):",
                         color = KColor.Accent, fontWeight = FontWeight.Bold
                     )
                     Spacer(Modifier.height(8.dp))
@@ -141,6 +153,33 @@ fun EnhanceScreen() {
             }
 
             Spacer(Modifier.height(20.dp))
+
+            // ─── UI DROPDOWN PILIH MODEL ───
+            Box(modifier = Modifier.fillMaxWidth()) {
+                OutlinedButton(
+                    onClick = { expanded = true },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = KColor.Text)
+                ) {
+                    Text("Model AI: $selectedModel")
+                }
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    modelList.forEach { modelName ->
+                        DropdownMenuItem(
+                            text = { Text(modelName) },
+                            onClick = {
+                                selectedModel = modelName
+                                expanded = false
+                            }
+                        )
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(16.dp))
 
             KPrimaryButton(
                 label = "Bikin HD Sekarang!",
