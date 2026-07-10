@@ -15,14 +15,14 @@ android {
         versionCode = 1
         versionName = "1.0.0"
 
+        // Jurus diet APK khusus Poco X6 Pro
         ndk {
             abiFilters.add("arm64-v8a")
         }
     }
 
-    // 🔥 INI JURUS BUNGKAM SATPAM LINT!
+    // Jurus bungkam satpam Lint
     lint {
-        // Abaikan semua error pas lagi ngerakit APK Release
         abortOnError = false
         checkReleaseBuilds = false
     }
@@ -31,35 +31,34 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-}
-
 
     kotlinOptions {
         jvmTarget = "11"
     }
-
+    
     buildFeatures {
         compose = true
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = true
+            isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("debug")
         }
     }
 
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
-            excludes += "lib/x86/**"
         }
     }
-}
+} // <--- NAH, TUTUPNYA YANG BENER DI SINI KANG!
+
+// (Biarkan kodingan dependencies { ... } dan ke bawahnya tetap utuh, jangan dihapus)
+
 
 dependencies {
     implementation(libs.androidx.core.ktx)
