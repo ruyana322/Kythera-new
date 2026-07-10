@@ -8,13 +8,19 @@ android {
     namespace = "com.d4nzxml.kythera"
     compileSdk = 35
 
-    defaultConfig {
+        defaultConfig {
         applicationId = "com.d4nzxml.kythera"
         minSdk = 24
-        targetSdk = 33
+        targetSdk = 28
         versionCode = 1
         versionName = "1.0.0"
+
+        // 🔥 INI JANGAN SAMPAI LUPA KANG! Buat diet APK khusus Poco X6 Pro lu
+        ndk {
+            abiFilters.add("arm64-v8a")
+        }
     }
+
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
