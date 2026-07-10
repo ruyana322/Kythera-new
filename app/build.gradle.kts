@@ -104,7 +104,8 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.appcompat)
 
-    implementation("com.github.arthenica:ffmpeg-kit:6.0-2")
+    // 🔥 INI DIA YANG UDAH DIGANTI JALUR DOWNLOAD-NYA BIAR GAK ERROR
+    implementation("com.arthenica:ffmpeg-kit-full:6.0-2")
     implementation("com.arthenica:smart-exception-java:0.2.1")
 
     implementation(libs.coil.compose)
