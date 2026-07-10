@@ -72,7 +72,7 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false // Dimatikan sementara biar R8 nggak ngehapus file penting
+            isMinifyEnabled = false 
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -104,8 +104,8 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.appcompat)
 
-    // 🔥 INI DIA YANG UDAH DIGANTI JALUR DOWNLOAD-NYA BIAR GAK ERROR
-    implementation("com.arthenica:ffmpeg-kit-full:6.0-2")
+    // 🔥 BALIK PAKE BAWAAN LU YANG UDAH TERBUKTI JALAN DARI AWAL
+    implementation("com.github.arthenica:ffmpeg-kit:6.0-2")
     implementation("com.arthenica:smart-exception-java:0.2.1")
 
     implementation(libs.coil.compose)
