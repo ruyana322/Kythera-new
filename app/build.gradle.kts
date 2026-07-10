@@ -8,7 +8,7 @@ android {
     namespace = "com.d4nzxml.kythera"
     compileSdk = 35
 
-    // 🔥 JURUS AUTO-JADI: Gembok dibikin & dipasang otomatis di server GitHub!
+    // 🔥 JURUS AUTO-JADI: Bikin & pasang tanda tangan otomatis
     signingConfigs {
         create("release") {
             val keystoreFile = file("kythera-auto.jks")
@@ -36,18 +36,22 @@ android {
     defaultConfig {
         applicationId = "com.d4nzxml.kythera"
         minSdk = 24
+        
+        // 🔥 Turun ke API 28 biar lolos Error 13 di Android 14
         targetSdk = 28
         versionCode = 1
         versionName = "1.0.0"
 
+        // 🔥 Diet APK khusus arsitektur 64-bit
         ndk {
             abiFilters.add("arm64-v8a")
         }
-        
-        // Pasang gembok otomatis ke defaultConfig
+
+        // Pasang gembok
         signingConfig = signingConfigs.getByName("release")
     }
 
+    // 🔥 Bungkam satpam Lint Google Play
     lint {
         abortOnError = false
         checkReleaseBuilds = false
@@ -61,19 +65,19 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
-    
+
     buildFeatures {
         compose = true
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = false // Dimatikan sementara biar R8 nggak ngehapus file penting
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            // Pasang gembok otomatis ke tipe release
+            // Pasang gembok ke tipe rilis
             signingConfig = signingConfigs.getByName("release")
         }
     }
@@ -81,20 +85,29 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "lib/x86/**"
         }
     }
 }
 
-// Bagian dependencies ke bawah jangan dirubah, biarkan seperti bawaan repo lu
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.compose.ui)
-    implementation(libs.androidx.compose.ui.graphics)
-    implementation(libs.androidx.compose.ui.tooling.preview)
-    implementation(libs.androidx.compose.material3)
-    
-    // Kalau ada library ffmpeg atau ncnn lu di bawah, biarkan saja tetap ada di sini
+    implementation(libs.androidx.ui)
+    implementation(libs.androidx.ui.graphics)
+    implementation(libs.androidx.ui.tooling.preview)
+    implementation(libs.androidx.material3)
+    implementation(libs.androidx.material.icons)
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.appcompat)
+
+    implementation("com.github.arthenica:ffmpeg-kit:6.0-2")
+    implementation("com.arthenica:smart-exception-java:0.2.1")
+
+    implementation(libs.coil.compose)
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+    debugImplementation(libs.androidx.ui.tooling)
 }
